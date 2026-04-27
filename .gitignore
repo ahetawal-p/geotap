@@ -11,6 +11,6 @@
 *.swp
 *.swo
 
-# Godot Mono / C# (unused here but harmless to ignore)
+# #Godot Mono / C# (unused here but harmless to ignore)
 .mono/
 mono_crash.*.json
