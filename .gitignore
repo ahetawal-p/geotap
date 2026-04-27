@@ -1,0 +1,16 @@
+# Godot editor cache + imported assets (regenerated on open)
+.godot/
+
+# Web export output (uncomment if hosting build/ via this repo for GitHub Pages)
+# build/
+
+# OS / IDE
+.DS_Store
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Godot Mono / C# (unused here but harmless to ignore)
+.mono/
+mono_crash.*.json

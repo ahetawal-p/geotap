@@ -1,0 +1,65 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/hud.gd" id="1_hud"]
+
+[node name="HUD" type="CanvasLayer"]
+script = ExtResource("1_hud")
+
+[node name="Root" type="Control" parent="."]
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+
+[node name="Top" type="VBoxContainer" parent="Root"]
+anchor_right = 1.0
+offset_left = 16.0
+offset_top = 16.0
+offset_right = -16.0
+offset_bottom = 120.0
+mouse_filter = 2
+theme_override_constants/separation = 12
+
+[node name="ClueLabel" type="Label" parent="Root/Top"]
+text = "Find: ..."
+horizontal_alignment = 1
+mouse_filter = 2
+theme_override_font_sizes/font_size = 26
+
+[node name="Header" type="HBoxContainer" parent="Root/Top"]
+mouse_filter = 2
+
+[node name="RoundLabel" type="Label" parent="Root/Top/Header"]
+text = "Round 1/1"
+size_flags_horizontal = 3
+mouse_filter = 2
+theme_override_font_sizes/font_size = 18
+
+[node name="ScoreLabel" type="Label" parent="Root/Top/Header"]
+text = "Score: 0"
+horizontal_alignment = 2
+mouse_filter = 2
+theme_override_font_sizes/font_size = 18
+
+[node name="Bottom" type="VBoxContainer" parent="Root"]
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -190.0
+offset_top = -140.0
+offset_right = 190.0
+offset_bottom = -32.0
+mouse_filter = 2
+alignment = 1
+theme_override_constants/separation = 16
+
+[node name="ResultLabel" type="Label" parent="Root/Bottom"]
+horizontal_alignment = 1
+mouse_filter = 2
+theme_override_font_sizes/font_size = 24
+
+[node name="NextButton" type="Button" parent="Root/Bottom"]
+custom_minimum_size = Vector2(180, 52)
+size_flags_horizontal = 4
+text = "Next >"
+theme_override_font_sizes/font_size = 20

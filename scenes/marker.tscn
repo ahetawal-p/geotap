@@ -1,0 +1,10 @@
+[gd_scene load_steps=2 format=3]
+
+[sub_resource type="SphereMesh" id="mesh_marker"]
+radius = 0.015
+height = 0.030
+radial_segments = 16
+rings = 8
+
+[node name="Marker" type="MeshInstance3D"]
+mesh = SubResource("mesh_marker")

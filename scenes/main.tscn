@@ -1,0 +1,89 @@
+[gd_scene load_steps=15 format=3]
+
+[ext_resource type="PackedScene" path="res://scenes/globe.tscn" id="1_globe"]
+[ext_resource type="PackedScene" path="res://scenes/marker.tscn" id="2_marker"]
+[ext_resource type="Script" path="res://scripts/game_manager.gd" id="3_gm"]
+[ext_resource type="Script" path="res://scripts/globe_controller.gd" id="4_gc"]
+[ext_resource type="PackedScene" path="res://ui/hud.tscn" id="5_hud"]
+[ext_resource type="Texture2D" path="res://assets/4k_milkyway.jpg" id="6_sky"]
+[ext_resource type="Texture2D" path="res://assets/2k_moon.jpg" id="7_moon"]
+
+[sub_resource type="StandardMaterial3D" id="mat_atmosphere"]
+transparency = 1
+shading_mode = 0
+albedo_color = Color(0.35, 0.6, 1.0, 0.18)
+cull_mode = 1
+disable_receive_shadows = true
+
+[sub_resource type="SphereMesh" id="mesh_atmosphere"]
+material = SubResource("mat_atmosphere")
+radius = 1.0
+height = 2.0
+radial_segments = 32
+rings = 16
+
+[sub_resource type="PanoramaSkyMaterial" id="sky_mat"]
+panorama = ExtResource("6_sky")
+filter = true
+
+[sub_resource type="Sky" id="sky"]
+sky_material = SubResource("sky_mat")
+radiance_size = 0
+
+[sub_resource type="Environment" id="env"]
+background_mode = 2
+sky = SubResource("sky")
+ambient_light_source = 2
+ambient_light_color = Color(0.55, 0.6, 0.75, 1)
+ambient_light_energy = 0.55
+tonemap_mode = 0
+
+[sub_resource type="StandardMaterial3D" id="mat_moon"]
+albedo_texture = ExtResource("7_moon")
+texture_filter = 5
+roughness = 1.0
+metallic = 0.0
+
+[sub_resource type="SphereMesh" id="mesh_moon"]
+material = SubResource("mat_moon")
+radius = 1.0
+height = 2.0
+radial_segments = 24
+rings = 12
+
+[node name="Main" type="Node3D"]
+script = ExtResource("3_gm")
+
+[node name="Camera3D" type="Camera3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 2.5)
+fov = 55.0
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("env")
+
+[node name="GlobeRoot" type="Node3D" parent="."]
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="GlobeRoot"]
+transform = Transform3D(0.866, -0.354, 0.354, 0, 0.707, 0.707, -0.5, -0.612, 0.612, 0, 5, 5)
+
+[node name="Moon" type="MeshInstance3D" parent="GlobeRoot"]
+transform = Transform3D(0.18, 0, 0, 0, 0.18, 0, 0, 0, 0.18, 0.5, 1.8, -5.0)
+mesh = SubResource("mesh_moon")
+cast_shadow = 0
+
+[node name="Globe" parent="GlobeRoot" instance=ExtResource("1_globe")]
+
+[node name="Atmosphere" type="MeshInstance3D" parent="GlobeRoot"]
+transform = Transform3D(1.02, 0, 0, 0, 1.02, 0, 0, 0, 1.02, 0, 0, 0)
+mesh = SubResource("mesh_atmosphere")
+
+[node name="GuessMarker" parent="GlobeRoot" instance=ExtResource("2_marker")]
+visible = false
+
+[node name="TargetMarker" parent="GlobeRoot" instance=ExtResource("2_marker")]
+visible = false
+
+[node name="GlobeController" type="Node" parent="."]
+script = ExtResource("4_gc")
+
+[node name="HUD" parent="." instance=ExtResource("5_hud")]

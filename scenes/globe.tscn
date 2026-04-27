@@ -1,0 +1,30 @@
+[gd_scene load_steps=5 format=3]
+
+[ext_resource type="Texture2D" path="res://assets/2k_earth_daymap.jpg" id="1_tex"]
+
+[sub_resource type="StandardMaterial3D" id="mat_earth"]
+albedo_texture = ExtResource("1_tex")
+texture_filter = 5
+shading_mode = 0
+
+[sub_resource type="SphereMesh" id="mesh_earth"]
+material = SubResource("mat_earth")
+radius = 1.0
+height = 2.0
+radial_segments = 64
+rings = 32
+
+[sub_resource type="SphereShape3D" id="shape_earth"]
+radius = 1.0
+
+[node name="Globe" type="Node3D"]
+
+[node name="EarthBody" type="StaticBody3D" parent="."]
+collision_layer = 1
+collision_mask = 0
+
+[node name="Earth" type="MeshInstance3D" parent="EarthBody"]
+mesh = SubResource("mesh_earth")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="EarthBody"]
+shape = SubResource("shape_earth")
