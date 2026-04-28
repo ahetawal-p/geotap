@@ -1,4 +1,4 @@
-[gd_scene load_steps=15 format=3]
+[gd_scene load_steps=16 format=3]
 
 [ext_resource type="PackedScene" path="res://scenes/globe.tscn" id="1_globe"]
 [ext_resource type="PackedScene" path="res://scenes/marker.tscn" id="2_marker"]
@@ -7,6 +7,7 @@
 [ext_resource type="PackedScene" path="res://ui/hud.tscn" id="5_hud"]
 [ext_resource type="Texture2D" path="res://assets/4k_milkyway.jpg" id="6_sky"]
 [ext_resource type="Texture2D" path="res://assets/2k_moon.jpg" id="7_moon"]
+[ext_resource type="AudioStream" path="res://assets/reveal.ogg" id="8_reveal"]
 
 [sub_resource type="StandardMaterial3D" id="mat_atmosphere"]
 transparency = 1
@@ -87,3 +88,7 @@ visible = false
 script = ExtResource("4_gc")
 
 [node name="HUD" parent="." instance=ExtResource("5_hud")]
+
+[node name="RevealAudio" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("8_reveal")
+volume_db = -6.0

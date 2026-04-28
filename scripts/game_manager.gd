@@ -28,6 +28,7 @@ const LINE_THICKNESS := 0.012
 @onready var target_marker: MeshInstance3D = $GlobeRoot/TargetMarker
 @onready var hud: CanvasLayer = $HUD
 @onready var world_env: WorldEnvironment = $WorldEnvironment
+@onready var reveal_audio: AudioStreamPlayer = $RevealAudio
 
 const BASE_CAMERA_Z := 2.5
 
@@ -134,6 +135,7 @@ func _start_round() -> void:
 	_guess_label.visible = false
 	_target_label.visible = false
 	_connection_line.visible = false
+	reveal_audio.stop()
 	var loc: Dictionary = _round_targets[_current_round]
 	var clue: String = loc.get("clue", loc.name)
 	print("Round %d/%d target: %s (%.4f, %.4f)" % [_current_round + 1, TOTAL_ROUNDS, loc.name, loc.lat, loc.lon])
@@ -193,8 +195,10 @@ func _on_location_tapped(latlon: Vector2, world_pos: Vector3) -> void:
 		)
 		if dist_local > LINE_THRESHOLD_MI:
 			_animate_arc_draw(guess_dir, target_dir, 2.2)
+		reveal_audio.play()
 		var rot_tw: Tween = globe_controller.animate_rotate_to_latlon(target_lat, target_lon, 2.2)
 		rot_tw.finished.connect(func() -> void:
+			reveal_audio.stop()
 			guess_resolved.emit(dist_local, score_local, total_local, is_last)
 		)
 	)
