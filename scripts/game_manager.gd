@@ -4,7 +4,7 @@ signal round_started(round_num: int, total_rounds: int, clue: String)
 signal guess_resolved(distance_mi: float, round_score: int, total_score: int, is_last_round: bool)
 signal game_over(final_score: int)
 
-const TOTAL_ROUNDS := 5
+var _total_rounds: int = 5
 
 const MARKER_SURFACE_OFFSET := 1.03
 const MARKER_DROP_HEIGHT := 1.30
@@ -41,7 +41,6 @@ var _round_active := false
 var _current_round := 0
 var _total_score := 0
 var _round_targets: Array = []
-var _awaiting_play_again := false
 
 func _ready() -> void:
 	guess_marker.visible = false
@@ -50,6 +49,7 @@ func _ready() -> void:
 	target_marker.material_override = _make_marker_material(Color(0.2, 0.85, 0.3))
 	globe_controller.location_tapped.connect(_on_location_tapped)
 	hud.next_pressed.connect(_on_next_pressed)
+	hud.round_count_selected.connect(_on_round_count_selected)
 
 	_guess_label = _make_billboard_label(GUESS_LABEL_BASE_PIXEL_SIZE)
 	_target_label = _make_billboard_label(TARGET_LABEL_BASE_PIXEL_SIZE)
@@ -76,8 +76,6 @@ func _ready() -> void:
 	await get_tree().process_frame
 	_adjust_for_viewport()
 
-	_start_game()
-
 func _adjust_for_viewport() -> void:
 	_adjust_ui_scale()
 	_adjust_camera_for_aspect()
@@ -96,7 +94,12 @@ func _adjust_ui_scale() -> void:
 	var win := get_window()
 	var min_dim: int = mini(win.size.x, win.size.y)
 	var scale: float = 1.0
-	if min_dim < 500:
+	# Touch devices: scale aggressively regardless of reported size.
+	# High-DPR mobile (e.g. Pixel 10 Pro at ~3x) may report device pixels (~1440),
+	# which would otherwise fall into the "desktop" bucket with no boost.
+	if DisplayServer.is_touchscreen_available():
+		scale = 3.0 if min_dim < 1000 else 2.5
+	elif min_dim < 500:
 		scale = 2.5
 	elif min_dim < 750:
 		scale = 1.5
@@ -118,14 +121,17 @@ func _make_billboard_label(pixel_size: float) -> Label3D:
 	lbl.visible = false
 	return lbl
 
+func _on_round_count_selected(count: int) -> void:
+	_total_rounds = count
+	_start_game()
+
 func _start_game() -> void:
-	_round_targets = Locations.pick_round(TOTAL_ROUNDS)
-	if _round_targets.size() < TOTAL_ROUNDS:
+	_round_targets = Locations.pick_round(_total_rounds)
+	if _round_targets.size() < _total_rounds:
 		push_error("Not enough locations to start the game")
 		return
 	_current_round = 0
 	_total_score = 0
-	_awaiting_play_again = false
 	_start_round()
 
 func _start_round() -> void:
@@ -138,17 +144,12 @@ func _start_round() -> void:
 	reveal_audio.stop()
 	var loc: Dictionary = _round_targets[_current_round]
 	var clue: String = loc.get("clue", loc.name)
-	print("Round %d/%d target: %s (%.4f, %.4f)" % [_current_round + 1, TOTAL_ROUNDS, loc.name, loc.lat, loc.lon])
-	round_started.emit(_current_round + 1, TOTAL_ROUNDS, clue)
+	print("Round %d/%d target: %s (%.4f, %.4f)" % [_current_round + 1, _total_rounds, loc.name, loc.lat, loc.lon])
+	round_started.emit(_current_round + 1, _total_rounds, clue)
 
 func _on_next_pressed() -> void:
-	if _awaiting_play_again:
-		_start_game()
-		return
-
 	_current_round += 1
-	if _current_round >= TOTAL_ROUNDS:
-		_awaiting_play_again = true
+	if _current_round >= _total_rounds:
 		game_over.emit(_total_score)
 	else:
 		_start_round()
@@ -183,7 +184,7 @@ func _on_location_tapped(latlon: Vector2, world_pos: Vector3) -> void:
 	var dist_local := dist
 	var score_local := score
 	var total_local := _total_score
-	var is_last := _current_round == TOTAL_ROUNDS - 1
+	var is_last := _current_round == _total_rounds - 1
 
 	_drop_marker(guess_marker, guess_dir, func() -> void:
 		_position_label_below(_guess_label, guess_marker)
