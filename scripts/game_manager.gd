@@ -43,6 +43,7 @@ var _total_score := 0
 var _round_targets: Array = []
 
 func _ready() -> void:
+	randomize()
 	guess_marker.visible = false
 	target_marker.visible = false
 	guess_marker.material_override = _make_marker_material(Color(0.95, 0.2, 0.2))
@@ -176,10 +177,14 @@ func _on_location_tapped(latlon: Vector2, world_pos: Vector3) -> void:
 	_total_score += score
 	print("Guess: (%.2f, %.2f)  Distance: %.0f mi  Score: %d  Total: %d" % [latlon.x, latlon.y, dist, score, _total_score])
 
-	_guess_label.text = "..."
-	_target_label.text = loc.name
+	# When the guess is close enough to the target, skip the geocoded city name on the
+	# red pin — the green pin's name is right there and the labels would crowd each other.
+	var show_guess_label: bool = dist >= 200.0
 
-	_request_reverse_geocode(latlon.x, latlon.y)
+	_target_label.text = loc.name
+	if show_guess_label:
+		_guess_label.text = "..."
+		_request_reverse_geocode(latlon.x, latlon.y)
 
 	var dist_local := dist
 	var score_local := score
@@ -187,8 +192,9 @@ func _on_location_tapped(latlon: Vector2, world_pos: Vector3) -> void:
 	var is_last := _current_round == _total_rounds - 1
 
 	_drop_marker(guess_marker, guess_dir, func() -> void:
-		_position_label_below(_guess_label, guess_marker)
-		_guess_label.visible = true
+		if show_guess_label:
+			_position_label_below(_guess_label, guess_marker)
+			_guess_label.visible = true
 		# Globe rotation, line draw, and target-marker drop all run in parallel.
 		_drop_marker(target_marker, target_dir, func() -> void:
 			_position_label_below(_target_label, target_marker)
