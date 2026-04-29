@@ -179,7 +179,7 @@ func _on_location_tapped(latlon: Vector2, world_pos: Vector3) -> void:
 
 	# When the guess is close enough to the target, skip the geocoded city name on the
 	# red pin — the green pin's name is right there and the labels would crowd each other.
-	var show_guess_label: bool = dist >= 200.0
+	var show_guess_label: bool = dist >= 350.0
 
 	_target_label.text = loc.name
 	if show_guess_label:
