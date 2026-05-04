@@ -3,7 +3,7 @@ extends RefCounted
 
 const DATA_PATH := "res://data/locations.json"
 
-static func pick_round(n: int, region: String = "World") -> Array:
+static func pick_round(n: int, region: String = "Whole World") -> Array:
 	var text := FileAccess.get_file_as_string(DATA_PATH)
 	if text.is_empty():
 		push_error("Failed to read %s" % DATA_PATH)
@@ -13,7 +13,7 @@ static func pick_round(n: int, region: String = "World") -> Array:
 		push_error("locations.json did not parse to an Array")
 		return []
 	var arr: Array = (parsed as Array).duplicate()
-	if region != "World":
+	if region != "Whole World":
 		arr = arr.filter(func(loc: Variant) -> bool:
 			return loc is Dictionary and loc.get("region", "") == region
 		)

@@ -41,7 +41,7 @@ var _round_active := false
 var _current_round := 0
 var _total_score := 0
 var _round_targets: Array = []
-var _selected_region: String = "World"
+var _selected_region: String = "Whole World"
 
 func _ready() -> void:
 	randomize()

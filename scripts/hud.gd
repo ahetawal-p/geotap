@@ -5,8 +5,10 @@ signal round_count_selected(count: int)
 signal region_selected(region: String)
 signal restart_pressed
 
+const REGION_PLACEHOLDER := "Choose a Region"
+
 const REGIONS: Array[String] = [
-	"World",
+	"Whole World",
 	"North America",
 	"South America",
 	"Europe",
@@ -15,8 +17,6 @@ const REGIONS: Array[String] = [
 	"Oceania",
 	"Antarctica",
 ]
-
-const ROUND_COUNTS: Array[int] = [5, 10, 20]
 
 @onready var clue_label: Label = $Root/Top/ClueLabel
 @onready var round_label: Label = $Root/Top/Header/RoundLabel
@@ -32,25 +32,22 @@ const ROUND_COUNTS: Array[int] = [5, 10, 20]
 @onready var region_dropdown: OptionButton = $Root/RegionPicker/RegionDropdown
 
 @onready var round_picker: VBoxContainer = $Root/RoundPicker
-@onready var round_title: Label = $Root/RoundPicker/Title
-@onready var rounds_dropdown: OptionButton = $Root/RoundPicker/RoundRow/RoundsDropdown
-@onready var back_button: Button = $Root/RoundPicker/RoundRow/BackButton
-@onready var start_button: Button = $Root/RoundPicker/StartButton
+@onready var round_title: Label = $Root/RoundPicker/HeaderRow/Title
+@onready var back_button: Button = $Root/RoundPicker/HeaderRow/BackButton
 
 @onready var restart_button: Button = $Root/RestartButton
 @onready var restart_confirm: ConfirmationDialog = $Root/RestartConfirm
 
 func _ready() -> void:
+	region_dropdown.add_item(REGION_PLACEHOLDER)
 	for region in REGIONS:
 		region_dropdown.add_item(region)
 	region_dropdown.selected = 0
 
-	for count in ROUND_COUNTS:
-		rounds_dropdown.add_item("%d Rounds" % count)
-	rounds_dropdown.selected = 0
-
 	next_button.pressed.connect(func() -> void: next_pressed.emit())
-	start_button.pressed.connect(_on_start_pressed)
+	$Root/RoundPicker/Btn5.pressed.connect(func() -> void: round_count_selected.emit(5))
+	$Root/RoundPicker/Btn10.pressed.connect(func() -> void: round_count_selected.emit(10))
+	$Root/RoundPicker/Btn20.pressed.connect(func() -> void: round_count_selected.emit(20))
 	back_button.pressed.connect(_on_back_pressed)
 	restart_button.pressed.connect(_on_restart_button_pressed)
 
@@ -69,7 +66,9 @@ func _ready() -> void:
 	gm.game_over.connect(_on_game_over)
 
 func _show_region_picker() -> void:
-	region_title.text = "Choose a Region"
+	region_title.text = ""
+	region_title.visible = false
+	region_dropdown.selected = 0
 	region_picker.visible = true
 	round_picker.visible = false
 	top_container.visible = false
@@ -90,13 +89,12 @@ func _show_round_picker() -> void:
 	restart_button.visible = false
 
 func _on_region_dropdown_picked(index: int) -> void:
+	if index == 0:
+		# Placeholder re-selected; stay put.
+		return
 	region_dropdown.selected = index
-	region_selected.emit(REGIONS[index])
+	region_selected.emit(REGIONS[index - 1])
 	_show_round_picker()
-
-func _on_start_pressed() -> void:
-	var idx: int = max(rounds_dropdown.selected, 0)
-	round_count_selected.emit(ROUND_COUNTS[idx])
 
 func _on_back_pressed() -> void:
 	_show_region_picker()
@@ -127,7 +125,9 @@ func _on_guess_resolved(distance_mi: float, round_score: int, total_score: int, 
 	next_button.visible = true
 
 func _on_game_over(final_score: int) -> void:
-	region_title.text = "Final Score: %d\nChoose a Region" % final_score
+	region_title.text = "Final Score: %d" % final_score
+	region_title.visible = true
+	region_dropdown.selected = 0
 	region_picker.visible = true
 	round_picker.visible = false
 	top_container.visible = false
