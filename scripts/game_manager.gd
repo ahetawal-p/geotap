@@ -16,7 +16,7 @@ const NOMINATIM_URL := "https://nominatim.openstreetmap.org/reverse?format=jsonv
 const GUESS_LABEL_BASE_PIXEL_SIZE := 0.0006
 const TARGET_LABEL_BASE_PIXEL_SIZE := 0.0009
 
-const LINE_THRESHOLD_MI := 1000.0
+const LINE_THRESHOLD_MI := 350.0
 const LINE_RADIUS := 1.045
 const LINE_SEGMENTS := 40
 const LINE_THICKNESS := 0.012
@@ -41,6 +41,7 @@ var _round_active := false
 var _current_round := 0
 var _total_score := 0
 var _round_targets: Array = []
+var _selected_region: String = "World"
 
 func _ready() -> void:
 	randomize()
@@ -51,6 +52,8 @@ func _ready() -> void:
 	globe_controller.location_tapped.connect(_on_location_tapped)
 	hud.next_pressed.connect(_on_next_pressed)
 	hud.round_count_selected.connect(_on_round_count_selected)
+	hud.region_selected.connect(_on_region_selected)
+	hud.restart_pressed.connect(_on_restart_pressed)
 
 	_guess_label = _make_billboard_label(GUESS_LABEL_BASE_PIXEL_SIZE)
 	_target_label = _make_billboard_label(TARGET_LABEL_BASE_PIXEL_SIZE)
@@ -122,15 +125,33 @@ func _make_billboard_label(pixel_size: float) -> Label3D:
 	lbl.visible = false
 	return lbl
 
+func _on_region_selected(region: String) -> void:
+	_selected_region = region
+
+func _on_restart_pressed() -> void:
+	_round_active = false
+	_current_round = 0
+	_total_score = 0
+	_round_targets.clear()
+	guess_marker.visible = false
+	target_marker.visible = false
+	_guess_label.visible = false
+	_target_label.visible = false
+	_connection_line.visible = false
+	reveal_audio.stop()
+
 func _on_round_count_selected(count: int) -> void:
 	_total_rounds = count
 	_start_game()
 
 func _start_game() -> void:
-	_round_targets = Locations.pick_round(_total_rounds)
-	if _round_targets.size() < _total_rounds:
-		push_error("Not enough locations to start the game")
+	_round_targets = Locations.pick_round(_total_rounds, _selected_region)
+	if _round_targets.is_empty():
+		push_error("No locations available for region: %s" % _selected_region)
 		return
+	if _round_targets.size() < _total_rounds:
+		print("Region '%s' has only %d locations; playing %d rounds instead of %d" % [_selected_region, _round_targets.size(), _round_targets.size(), _total_rounds])
+		_total_rounds = _round_targets.size()
 	_current_round = 0
 	_total_score = 0
 	_start_round()
@@ -185,6 +206,9 @@ func _on_location_tapped(latlon: Vector2, world_pos: Vector3) -> void:
 	if show_guess_label:
 		_guess_label.text = "..."
 		_request_reverse_geocode(latlon.x, latlon.y)
+	else:
+		_guess_label.text = ""
+		_guess_label.visible = false
 
 	var dist_local := dist
 	var score_local := score
